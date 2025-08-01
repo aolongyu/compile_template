@@ -1,0 +1,5 @@
+1. 字符串解析template / script / style
+2. 支持scopedStyle注入
+3. 支持第三方包导入和使用
+4. 支持入参props
+5. 支持事件分发
