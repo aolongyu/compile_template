@@ -3,28 +3,55 @@ import { v4 } from "uuid";
 import { compile as vueTemplateComplie } from "vue-template-compiler";
 import { Message } from "element-ui";
 
+export const LogStatus = {
+  success: "success",
+  danger: "danger",
+};
+
 export class ComponentRender {
   scopedId = "";
   vueText = "";
+  originStructure = {
+    template: "",
+    script: "",
+    style: "",
+  };
   vueStructure = {
     template: "",
     script: "",
     style: "",
   };
+  logCallback = () => {};
   containerRef = null;
   componentInstance = null;
 
-  constructor(containerRef) {
+  constructor(containerRef, logCallback) {
     this.containerRef = containerRef;
+    this.logCallback = logCallback || (() => {});
+
+    this.logCallback(
+      LogStatus.success,
+      "创建渲染器",
+      this.containerRef.outerHTML
+    );
+
     this.scopedId = `data-v-${v4().slice(0, 8)}`;
+    this.logCallback(LogStatus.success, "生成scoped标识", this.scopedId);
   }
 
-  get instance() {
-    return this.componentInstance;
+  get text() {
+    return this.vueText;
+  }
+
+  get structure() {
+    return this.vueStructure;
   }
 
   render(vueText, { props = {}, events = {} } = {}) {
+    this.logCallback(LogStatus.success, "开始渲染", this.scopedId);
+
     this.vueText = vueText;
+    this.logCallback(LogStatus.success, "获取原始字符", this.vueText);
 
     try {
       // 1. 销毁原有实例
@@ -51,6 +78,11 @@ export class ComponentRender {
         render: parsedTemplate.render,
         staticRenderFns: parsedTemplate.staticRenderFns,
       });
+      this.logCallback(
+        LogStatus.success,
+        "创建组件构造器",
+        ComponentConstructor.toString()
+      );
 
       // 8. 实例化组件
       this.componentInstance = new ComponentConstructor({
@@ -58,16 +90,34 @@ export class ComponentRender {
           ...props,
         },
       });
+      this.logCallback(
+        LogStatus.success,
+        "实例化组件",
+        JSON.stringify(this.componentInstance.$options)
+      );
+      this.logCallback(LogStatus.success, "挂载props", JSON.stringify(props));
 
       // 9. 挂载事件
       for (let key in events) {
         this.componentInstance.$on(key, events[key]);
       }
+      this.logCallback(
+        LogStatus.success,
+        "挂载事件",
+        JSON.stringify(Object.keys(events))
+      );
 
       // 10. 挂载到容器
       this.componentInstance.$mount(this.containerRef);
+      this.logCallback(
+        LogStatus.success,
+        "挂载到容器",
+        this.containerRef.innerHTML
+      );
+      this.logCallback(LogStatus.success, "渲染完成", "前往【渲染预览】查看效果");
     } catch (error) {
       Message.error(error);
+      this.logCallback(LogStatus.danger, "出错了，渲染失败", error);
       throw new Error(error);
     }
   }
@@ -76,6 +126,12 @@ export class ComponentRender {
    * 销毁已有实例
    */
   destroy() {
+    this.logCallback(
+      LogStatus.success,
+      "销毁已有实例",
+      this.componentInstance?.$options.name || "无实例"
+    );
+
     if (!this.componentInstance) {
       return;
     }
@@ -92,12 +148,24 @@ export class ComponentRender {
       return match ? match[1].trim() : "";
     };
 
-    Object.assign(this.vueStructure, {
-      template: getMatch(this.vueText, /<template>([\s\S]*?)<\/template>/),
-      script: getMatch(this.vueText, /<script>([\s\S]*?)<\/script>/),
-      style: getMatch(this.vueText, /<style>([\s\S]*?)<\/style>/),
+    const template = getMatch(this.vueText, /<template>([\s\S]*?)<\/template>/);
+    this.logCallback(LogStatus.success, "拆分template", template);
+    const script = getMatch(this.vueText, /<script>([\s\S]*?)<\/script>/);
+    this.logCallback(LogStatus.success, "拆分script", script);
+    const style = getMatch(this.vueText, /<style>([\s\S]*?)<\/style>/);
+    this.logCallback(LogStatus.success, "拆分style", style);
+
+    Object.assign(this.originStructure, {
+      template,
+      script,
+      style,
     });
-    debugger
+
+    Object.assign(this.vueStructure, {
+      template,
+      script,
+      style,
+    });
   }
 
   /**
@@ -107,7 +175,14 @@ export class ComponentRender {
     const { template } = this.vueStructure;
 
     // 1. 危险标签
-    ["script", "iframe", "svg", "canvas", "video", "audio"].forEach((tag) => {
+    const dangerTags = ["script", "iframe", "svg", "canvas", "video", "audio"];
+    this.logCallback(
+      LogStatus.success,
+      "检测template模版标签安全",
+      `目标标签：${JSON.stringify(dangerTags)}`,
+      `模版内容：${template}`
+    );
+    dangerTags.forEach((tag) => {
       const regexp = new RegExp(`<\/?${tag}[^>]*>`, "gi");
       if (regexp.test(template)) {
         throw new Error(`禁止使用${tag}标签`);
@@ -115,12 +190,18 @@ export class ComponentRender {
     });
 
     // 2. 危险指令v-html
+    this.logCallback(
+      LogStatus.success,
+      "检测template模版指令安全",
+      "目标指令：[v-html]",
+      `模版内容：${template}`
+    );
     if (/v-html=/.test(template)) {
       throw new Error(`禁止使用v-html指令`);
     }
 
     // 3. 危险事件
-    // 当前没有危险事件
+    this.logCallback(LogStatus.success, "检测template模版事件安全", "[]");
     [].forEach((name) => {
       const regexp = new RegExp(`@(${name})`, "gi");
       if (regexp.test(template)) {
@@ -150,6 +231,19 @@ export class ComponentRender {
         (fn) => new Function("_c", "_v", "_s", fn)
       );
 
+      this.logCallback(
+        LogStatus.success,
+        "解析template内容",
+        "生成render函数",
+        `render函数：${renderFunction.toString()}`
+      );
+      this.logCallback(
+        LogStatus.success,
+        "解析template内容",
+        "生成staticRenderFns函数",
+        `staticRenderFns函数：${staticRenderFns.map((fn) => fn.toString())}`
+      );
+
       return {
         render: renderFunction,
         staticRenderFns: staticRenderFns,
@@ -163,6 +257,11 @@ export class ComponentRender {
    * 解析script内容
    */
   parseScript() {
+    this.logCallback(
+      LogStatus.success,
+      "解析script内容",
+      `script内容：${this.vueStructure.script}`
+    );
     try {
       const { script } = this.vueStructure;
       const optionStr = script.replace(/^export(\s)+default/, "");
@@ -171,6 +270,11 @@ export class ComponentRender {
       if (option.data && typeof option.data !== "function") {
         option.data = () => option.data;
       }
+      this.logCallback(
+        LogStatus.success,
+        "解析script内容",
+        `option：${JSON.stringify(option)}`
+      );
       return option;
     } catch (error) {
       throw new Error(error);
@@ -202,8 +306,20 @@ export class ComponentRender {
 
       // 1. template attribute 注入
       this.vueStructure.template = withTemplate(template, this.scopedId);
+      this.logCallback(
+        LogStatus.success,
+        "template注入scopedId",
+        `原：${template}`,
+        `现：${this.vueStructure.template}`
+      );
       // 2. style样式属性注入
       this.vueStructure.style = withStyle(style, this.scopedId);
+      this.logCallback(
+        LogStatus.success,
+        "style注入scopedId",
+        `原：${style}`,
+        `现：${this.vueStructure.style}`
+      );
     } catch (error) {
       throw new Error(error);
     }

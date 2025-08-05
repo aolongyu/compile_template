@@ -1,8 +1,8 @@
 import VueRouter from "vue-router";
 
 const routes = [
-  { path: "/", redirect: "/compile" },
-  { path: "/home", component: () => import("@/views/Home") },
+  { path: "/", redirect: "/intro" },
+  { path: "/intro", component: () => import("@/views/Intro") },
   { path: "/compile", component: () => import("@/views/Compile") },
 ];
 
