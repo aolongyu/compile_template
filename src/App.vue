@@ -1,12 +1,15 @@
 <template>
   <el-container>
     <el-header>
-      <router-link to="/home">
-        <el-button>Home</el-button>
-      </router-link>
-      <router-link to="/complie">
-        <el-button>Complie</el-button>
-      </router-link>
+      <el-menu
+        class="el-menu-demo"
+        mode="horizontal"
+        :router="true"
+        :active="defaultActiveMenu"
+      >
+        <el-menu-item index="intro"> 项目介绍 </el-menu-item>
+        <el-menu-item index="compile"> 项目能力展示 </el-menu-item>
+      </el-menu>
     </el-header>
     <el-main>
       <router-view></router-view>
@@ -17,5 +20,11 @@
 <script>
 export default {
   name: "App",
+  data: () => ({
+    defaultActiveMenu: "intro",
+  }),
+  created() {
+    this.defaultActiveMenu = this.$route.path.split("/")[1];
+  },
 };
 </script>

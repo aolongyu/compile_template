@@ -30,6 +30,9 @@ importers:
         specifier: ^2.7.16
         version: 2.7.16
     devDependencies:
+      ace-builds:
+        specifier: ^1.43.2
+        version: 1.43.2
       clean-webpack-plugin:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.101.0)
@@ -399,6 +402,9 @@ packages:
   accepts@1.3.8:
     resolution: {integrity: sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw==}
     engines: {node: '>= 0.6'}
+
+  ace-builds@1.43.2:
+    resolution: {integrity: sha512-3wzJUJX0RpMc03jo0V8Q3bSb/cKPnS7Nqqw8fVHsCCHweKMiTIxT3fP46EhjmVy6MCuxwP801ere+RW245phGw==}
 
   acorn-import-phases@1.0.4:
     resolution: {integrity: sha512-wKmbr/DDiIXzEOiWrTTUcDm24kQ2vGfZQvM2fwg2vXqR5uW6aapr7ObPtj1th32b9u90/Pf4AItvdTh42fBmVQ==}
@@ -2493,6 +2499,8 @@ snapshots:
     dependencies:
       mime-types: 2.1.35
       negotiator: 0.6.3
+
+  ace-builds@1.43.2: {}
 
   acorn-import-phases@1.0.4(acorn@8.15.0):
     dependencies:

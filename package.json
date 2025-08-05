@@ -15,6 +15,7 @@
   "author": "longyu.ao",
   "license": "ISC",
   "devDependencies": {
+    "ace-builds": "^1.43.2",
     "clean-webpack-plugin": "^4.0.0",
     "css-loader": "^7.1.2",
     "html-webpack-plugin": "^5.6.3",
