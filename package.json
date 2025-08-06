@@ -18,6 +18,7 @@
     "ace-builds": "^1.43.2",
     "clean-webpack-plugin": "^4.0.0",
     "css-loader": "^7.1.2",
+    "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.6.3",
     "mini-css-extract-plugin": "^2.9.2",
     "path": "^0.12.7",
@@ -25,6 +26,7 @@
     "sass-loader": "^16.0.5",
     "style-loader": "^4.0.0",
     "terser-webpack-plugin": "^5.3.14",
+    "url-loader": "^4.1.1",
     "vue-loader": "^15.11.1",
     "webpack": "^5.101.0",
     "webpack-cli": "^6.0.1",
@@ -38,10 +40,5 @@
     "vue": "^2.7.16",
     "vue-router": "^3.6.5",
     "vue-template-compiler": "^2.7.16"
-  },
-  "browser": {
-    "fs": false,
-    "path": false,
-    "os": false
   }
 }
