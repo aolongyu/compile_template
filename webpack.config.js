@@ -12,7 +12,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "./dist"),
     filename: "js/bundle.[name].[contenthash:8].js",
-    publicPath: "/",
+    publicPath: "./",
   },
   resolve: {
     alias: {

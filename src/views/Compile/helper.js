@@ -1,6 +1,6 @@
 import Vue from "vue";
 import { v4 } from "uuid";
-import { compile as vueTemplateComplie } from "vue-template-compiler";
+import { compile as vueTemplateCompile } from "vue-template-compiler";
 import { Message } from "element-ui";
 
 export const LogStatus = {
@@ -256,7 +256,7 @@ export class ComponentRender {
   parseTemplate() {
     try {
       const { template } = this.vueStructure;
-      const result = vueTemplateComplie(template);
+      const result = vueTemplateCompile(template);
       if (result.errors.length > 0) {
         throw new Error(
           result.errors
