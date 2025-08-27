@@ -2,9 +2,7 @@
   <div class="preview-drawer">
     <el-collapse :value="['preview']">
       <el-collapse-item title="实时渲染预览" name="preview">
-        <div class="render-html">
-          <iframe frameborder="no" :srcdoc="renderHtml"></iframe>
-        </div>
+        <div id="shadow-dom-box"></div>
       </el-collapse-item>
       <el-collapse-item title="HTML" name="html">
         <pre>{{ data.html || "-" }}</pre>
@@ -23,6 +21,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import { combineHtml } from "./helper.js";
 
 export default {
@@ -35,6 +34,7 @@ export default {
       js: "",
       iframeSrcdoc: "",
     },
+    shadowRoot: null, // 保存shadow root引用
   }),
 
   computed: {
@@ -47,6 +47,55 @@ export default {
   methods: {
     myRender(data) {
       Object.assign(this.data, data || {});
+
+      this.handleRender();
+    },
+
+    handleRender() {
+      try {
+        const { html, css, js } = this.data;
+        const shadowDom = document.querySelector("#shadow-dom-box");
+
+        if (!shadowDom) {
+          console.error("Shadow DOM container not found");
+          return;
+        }
+
+        // 如果已经存在shadow root，先移除
+        if (this.shadowRoot) {
+          shadowDom.innerHTML = "";
+          this.shadowRoot = null;
+        }
+
+        // 创建新的shadow root
+        this.shadowRoot = shadowDom.attachShadow({ mode: "open" });
+
+        // 在shadow root中添加HTML和CSS内容
+        this.shadowRoot.innerHTML = combineHtml(html, css, js);
+
+        // this.$nextTick(() => {
+          this.executeScripts();
+
+          console.log("Shadow DOM content rendered successfully");
+        // });
+      } catch (error) {
+        console.error("Error rendering shadow DOM:", error);
+      }
+    },
+
+    async executeScripts() {
+      const scripts = this.shadowRoot.querySelectorAll("script");
+      for (const script of scripts) {
+        if (script.src) {
+          const res = await axios.get(script.src);
+          script.textContent = res.data;
+        }
+        const scriptContent = script.textContent;
+        if (scriptContent) {
+          const scriptFn = new Function(scriptContent);
+          scriptFn.call(this.shadowRoot);
+        }
+      }
     },
   },
 };
@@ -57,15 +106,11 @@ export default {
   padding: 0 20px;
   border-top: 1px solid #e5e5e5;
 
-  .render-html {
-    width: 100%;
-    height: 100%;
+  #shadow-dom-box {
+    min-height: 300px;
     border: 2px dashed #ccc;
-
-    iframe {
-      width: 100%;
-      height: 100%;
-    }
+    background-color: #f9f9f9;
+    overflow: auto;
   }
 }
 </style>
