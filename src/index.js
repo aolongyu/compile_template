@@ -1,3 +1,5 @@
+import "./default.css";
+
 import Vue from "vue";
 
 // element-ui

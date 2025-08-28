@@ -11,8 +11,8 @@ module.exports = {
   entry: path.resolve(__dirname, "./src/index.js"),
   output: {
     path: path.resolve(__dirname, "./dist"),
-    filename: "bundle.[name].[contenthash:8].js",
-    publicPath: "/",
+    filename: "js/bundle.[name].[contenthash:8].js",
+    publicPath: "./",
   },
   resolve: {
     alias: {
@@ -32,14 +32,28 @@ module.exports = {
     }),
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
-      filename: "[name].[contenthash:8].css",
-      chunkFilename: "[id].[contenthash:8].css",
+      filename: "css/[name].[contenthash:8].css",
+      chunkFilename: "css/[id].[contenthash:8].css",
       ignoreOrder: true,
     }),
     new CleanWebpackPlugin(),
   ],
   module: {
     rules: [
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        type: "asset/resource",
+        generator: {
+          filename: "assets/fonts/[name][ext]",
+        },
+      },
+      {
+        test: /\.(png|jpg|gif|svg)$/,
+        type: "asset/resource",
+        generator: {
+          filename: "assets/images/[name]-[contenthash:8][ext]",
+        },
+      },
       {
         test: /\.vue$/,
         exclude: /node_modules/,

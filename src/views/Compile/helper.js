@@ -1,6 +1,6 @@
 import Vue from "vue";
 import { v4 } from "uuid";
-import { compile as vueTemplateComplie } from "vue-template-compiler";
+import { compile as vueTemplateCompile } from "vue-template-compiler";
 import { Message } from "element-ui";
 
 export const LogStatus = {
@@ -30,13 +30,17 @@ export class ComponentRender {
     this.logCallback = logCallback || (() => {});
 
     this.logCallback(
-      LogStatus.success,
+      { status: { status: LogStatus.success, done: false }, done: false },
       "创建渲染器",
       this.containerRef.outerHTML
     );
 
     this.scopedId = `data-v-${v4().slice(0, 8)}`;
-    this.logCallback(LogStatus.success, "生成scoped标识", this.scopedId);
+    this.logCallback(
+      { status: { status: LogStatus.success, done: false }, done: false },
+      "生成scoped标识",
+      this.scopedId
+    );
   }
 
   get text() {
@@ -48,10 +52,18 @@ export class ComponentRender {
   }
 
   render(vueText, { props = {}, events = {} } = {}) {
-    this.logCallback(LogStatus.success, "开始渲染", this.scopedId);
+    this.logCallback(
+      { status: LogStatus.success, done: false },
+      "开始渲染",
+      this.scopedId
+    );
 
     this.vueText = vueText;
-    this.logCallback(LogStatus.success, "获取原始字符", this.vueText);
+    this.logCallback(
+      { status: LogStatus.success, done: false },
+      "获取原始字符",
+      this.vueText
+    );
 
     try {
       // 1. 销毁原有实例
@@ -79,7 +91,7 @@ export class ComponentRender {
         staticRenderFns: parsedTemplate.staticRenderFns,
       });
       this.logCallback(
-        LogStatus.success,
+        { status: LogStatus.success, done: false },
         "创建组件构造器",
         ComponentConstructor.toString()
       );
@@ -91,18 +103,22 @@ export class ComponentRender {
         },
       });
       this.logCallback(
-        LogStatus.success,
+        { status: LogStatus.success, done: false },
         "实例化组件",
         JSON.stringify(this.componentInstance.$options)
       );
-      this.logCallback(LogStatus.success, "挂载props", JSON.stringify(props));
+      this.logCallback(
+        { status: LogStatus.success, done: false },
+        "挂载props",
+        JSON.stringify(props)
+      );
 
       // 9. 挂载事件
       for (let key in events) {
         this.componentInstance.$on(key, events[key]);
       }
       this.logCallback(
-        LogStatus.success,
+        { status: LogStatus.success, done: false },
         "挂载事件",
         JSON.stringify(Object.keys(events))
       );
@@ -110,14 +126,22 @@ export class ComponentRender {
       // 10. 挂载到容器
       this.componentInstance.$mount(this.containerRef);
       this.logCallback(
-        LogStatus.success,
+        { status: LogStatus.success, done: false },
         "挂载到容器",
         this.containerRef.innerHTML
       );
-      this.logCallback(LogStatus.success, "渲染完成", "前往【渲染预览】查看效果");
+      this.logCallback(
+        { status: LogStatus.success, done: true },
+        "渲染完成",
+        "前往【渲染预览】查看效果"
+      );
     } catch (error) {
       Message.error(error);
-      this.logCallback(LogStatus.danger, "出错了，渲染失败", error);
+      this.logCallback(
+        { status: LogStatus.danger, done: true },
+        "出错了，渲染失败",
+        error
+      );
       throw new Error(error);
     }
   }
@@ -127,7 +151,7 @@ export class ComponentRender {
    */
   destroy() {
     this.logCallback(
-      LogStatus.success,
+      { status: LogStatus.success, done: false },
       "销毁已有实例",
       this.componentInstance?.$options.name || "无实例"
     );
@@ -149,11 +173,23 @@ export class ComponentRender {
     };
 
     const template = getMatch(this.vueText, /<template>([\s\S]*?)<\/template>/);
-    this.logCallback(LogStatus.success, "拆分template", template);
+    this.logCallback(
+      { status: LogStatus.success, done: false },
+      "拆分template",
+      template
+    );
     const script = getMatch(this.vueText, /<script>([\s\S]*?)<\/script>/);
-    this.logCallback(LogStatus.success, "拆分script", script);
+    this.logCallback(
+      { status: LogStatus.success, done: false },
+      "拆分script",
+      script
+    );
     const style = getMatch(this.vueText, /<style>([\s\S]*?)<\/style>/);
-    this.logCallback(LogStatus.success, "拆分style", style);
+    this.logCallback(
+      { status: LogStatus.success, done: false },
+      "拆分style",
+      style
+    );
 
     Object.assign(this.originStructure, {
       template,
@@ -177,7 +213,7 @@ export class ComponentRender {
     // 1. 危险标签
     const dangerTags = ["script", "iframe", "svg", "canvas", "video", "audio"];
     this.logCallback(
-      LogStatus.success,
+      { status: LogStatus.success, done: false },
       "检测template模版标签安全",
       `目标标签：${JSON.stringify(dangerTags)}`,
       `模版内容：${template}`
@@ -191,7 +227,7 @@ export class ComponentRender {
 
     // 2. 危险指令v-html
     this.logCallback(
-      LogStatus.success,
+      { status: LogStatus.success, done: false },
       "检测template模版指令安全",
       "目标指令：[v-html]",
       `模版内容：${template}`
@@ -201,7 +237,11 @@ export class ComponentRender {
     }
 
     // 3. 危险事件
-    this.logCallback(LogStatus.success, "检测template模版事件安全", "[]");
+    this.logCallback(
+      { status: LogStatus.success, done: false },
+      "检测template模版事件安全",
+      "[]"
+    );
     [].forEach((name) => {
       const regexp = new RegExp(`@(${name})`, "gi");
       if (regexp.test(template)) {
@@ -216,7 +256,7 @@ export class ComponentRender {
   parseTemplate() {
     try {
       const { template } = this.vueStructure;
-      const result = vueTemplateComplie(template);
+      const result = vueTemplateCompile(template);
       if (result.errors.length > 0) {
         throw new Error(
           result.errors
@@ -232,13 +272,13 @@ export class ComponentRender {
       );
 
       this.logCallback(
-        LogStatus.success,
+        { status: LogStatus.success, done: false },
         "解析template内容",
         "生成render函数",
         `render函数：${renderFunction.toString()}`
       );
       this.logCallback(
-        LogStatus.success,
+        { status: LogStatus.success, done: false },
         "解析template内容",
         "生成staticRenderFns函数",
         `staticRenderFns函数：${staticRenderFns.map((fn) => fn.toString())}`
@@ -258,7 +298,7 @@ export class ComponentRender {
    */
   parseScript() {
     this.logCallback(
-      LogStatus.success,
+      { status: LogStatus.success, done: false },
       "解析script内容",
       `script内容：${this.vueStructure.script}`
     );
@@ -271,7 +311,7 @@ export class ComponentRender {
         option.data = () => option.data;
       }
       this.logCallback(
-        LogStatus.success,
+        { status: LogStatus.success, done: false },
         "解析script内容",
         `option：${JSON.stringify(option)}`
       );
@@ -307,7 +347,7 @@ export class ComponentRender {
       // 1. template attribute 注入
       this.vueStructure.template = withTemplate(template, this.scopedId);
       this.logCallback(
-        LogStatus.success,
+        { status: LogStatus.success, done: false },
         "template注入scopedId",
         `原：${template}`,
         `现：${this.vueStructure.template}`
@@ -315,7 +355,7 @@ export class ComponentRender {
       // 2. style样式属性注入
       this.vueStructure.style = withStyle(style, this.scopedId);
       this.logCallback(
-        LogStatus.success,
+        { status: LogStatus.success, done: false },
         "style注入scopedId",
         `原：${style}`,
         `现：${this.vueStructure.style}`
