@@ -33,6 +33,7 @@
     "webpack-dev-server": "^5.2.2"
   },
   "dependencies": {
+    "axios": "^1.11.0",
     "element-ui": "^2.15.14",
     "lodash": "^4.17.21",
     "moment": "^2.30.1",
